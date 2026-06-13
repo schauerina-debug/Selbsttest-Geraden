@@ -132,6 +132,12 @@
 
   <div class="card">
     <div class="card-title">Teilnahmen</div>
+    <div style="margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <label for="courseFilter" style="font-weight:600;font-size:0.9rem;">Kurs filtern:</label>
+      <select id="courseFilter" style="padding:0.4rem 0.7rem;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;">
+        <option value="">Alle Kurse</option>
+      </select>
+    </div>
     <div id="logContainer">
       <p class="empty">Bisher keine Teilnahmen.</p>
     </div>
@@ -168,6 +174,22 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
+let allDocs = [];
+
+function buildCourseFilter(docs) {
+  const sel = document.getElementById('courseFilter');
+  const current = sel.value;
+  const courses = [...new Set(docs.map(d => d.course).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Alle Kurse</option>';
+  courses.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  sel.value = current;
+}
+
 function renderAll() {
   const container = document.getElementById('logContainer');
   container.innerHTML = '<p class="empty">Lade Daten...</p>';
@@ -176,25 +198,33 @@ function renderAll() {
     .orderBy('timestamp', 'desc')
     .get()
     .then(snapshot => {
-      const docs = [];
-      snapshot.forEach(doc => docs.push(doc.data()));
+      allDocs = [];
+      snapshot.forEach(doc => allDocs.push(doc.data()));
 
-      document.getElementById('totalCount').textContent = docs.length;
+      document.getElementById('totalCount').textContent = allDocs.length;
 
-      if (docs.length === 0) {
+      if (allDocs.length === 0) {
         container.innerHTML = '<p class="empty">Bisher keine Teilnahmen.</p>';
         document.getElementById('avgScore').textContent = '-';
         return;
       }
 
-      const avg = Math.round(docs.reduce((s, e) => s + e.percent, 0) / docs.length);
-      document.getElementById('avgScore').textContent = avg + '%';
+      buildCourseFilter(allDocs);
 
-      let html = '<table><thead><tr><th>Name</th><th>Datum</th><th>Ergebnis</th></tr></thead><tbody>';
-      docs.forEach(entry => {
+      const selectedCourse = document.getElementById('courseFilter').value;
+      const filtered = selectedCourse ? allDocs.filter(d => d.course === selectedCourse) : allDocs;
+
+      document.getElementById('totalCount').textContent = filtered.length + (selectedCourse ? ` (${allDocs.length} gesamt)` : '');
+
+      const avg = filtered.length > 0 ? Math.round(filtered.reduce((s, e) => s + e.percent, 0) / filtered.length) : 0;
+      document.getElementById('avgScore').textContent = (filtered.length > 0 ? avg + '%' : '-') + (selectedCourse && allDocs.length > 0 ? ` (${Math.round(allDocs.reduce((s, e) => s + e.percent, 0) / allDocs.length)}% gesamt)` : '');
+
+      let html = '<table><thead><tr><th>Name</th><th>Kurs</th><th>Datum</th><th>Ergebnis</th></tr></thead><tbody>';
+      filtered.forEach(entry => {
         const badgeClass = entry.percent >= 80 ? 'good' : entry.percent >= 50 ? 'ok' : 'bad';
         html += `<tr>
           <td>${escapeHtml(entry.name)}</td>
+          <td>${escapeHtml(entry.course || '-')}</td>
           <td style="color:#6b7280;">${escapeHtml(entry.date || '')}</td>
           <td><span class="badge ${badgeClass}">${escapeHtml(entry.score)} (${entry.percent}%)</span></td>
         </tr>`;
@@ -233,9 +263,9 @@ function exportCSV() {
       const docs = [];
       snapshot.forEach(doc => docs.push(doc.data()));
       if (docs.length === 0) { alert('Keine Daten zum Exportieren.'); return; }
-      let csv = 'Name;Datum;Ergebnis;Prozent\n';
+      let csv = 'Name;Kurs;Datum;Ergebnis;Prozent\n';
       docs.forEach(entry => {
-        csv += `"${entry.name}";"${entry.date}";"${entry.score}";${entry.percent}\n`;
+        csv += `"${entry.name}";"${entry.course || '-'}";"${entry.date}";"${entry.score}";${entry.percent}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
@@ -252,6 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refreshBtn').addEventListener('click', renderAll);
   document.getElementById('clearBtn').addEventListener('click', clearLog);
   document.getElementById('exportBtn').addEventListener('click', exportCSV);
+  document.getElementById('courseFilter').addEventListener('change', () => {
+    if (allDocs.length > 0) renderAll();
+  });
 });
 </script>
 </body>
