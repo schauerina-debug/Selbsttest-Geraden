@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selbsttest Geraden &ndash; Teilnahmen</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --border: #d1d5db;
+    --bg: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    line-height: 1.6;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #eff6ff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th {
+    text-align: left;
+    padding: 0.5rem 0.5rem;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+  }
+  td {
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  th:last-child, td:last-child { text-align: center; }
+  .empty {
+    color: #6b7280;
+    text-align: center;
+    padding: 2rem 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge.good { background: #dcfce7; color: var(--green); }
+  .badge.ok { background: #fef3c7; color: #d97706; }
+  .badge.bad { background: #fee2e2; color: var(--red); }
+  .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+  button {
+    padding: 0.6rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary { background: #e2e8f0; color: #475569; }
+  .btn-secondary:hover { background: #cbd5e1; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-danger:hover { opacity: 0.85; }
+  .stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .stat-item .lbl {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+  @media (max-width: 500px) {
+    body { padding: 1rem 0.5rem; }
+    .card { padding: 1rem; }
+  }
+</style>
+<script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>Selbsttest Geraden</h1>
+  <p class="subtitle">Teilnahmen &Uuml;bersicht</p>
+
+  <div class="card">
+    <div class="card-title">Statistik</div>
+    <div class="stats" id="statsContainer">
+      <div class="stat-item"><div class="num" id="totalCount">0</div><div class="lbl">Teilnahmen</div></div>
+      <div class="stat-item"><div class="num" id="avgScore">-</div><div class="lbl">Durchschnitt</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Teilnahmen</div>
+    <div id="logContainer">
+      <p class="empty">Bisher keine Teilnahmen.</p>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" id="refreshBtn">Aktualisieren</button>
+      <button class="btn-danger" id="clearBtn">Alle löschen</button>
+      <button class="btn-primary" id="exportBtn">Als CSV exportieren</button>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <p style="font-size:0.85rem;color:#6b7280;">
+      &Ouml;ffne den <a href="selbsttest.html" style="color:var(--primary);">Selbsttest</a>, um am Test teilzunehmen.
+    </p>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAD6C3XarkBvX_kFzmPMxHAsj7DSlmxXss",
+  authDomain: "selbsttest-geraden.firebaseapp.com",
+  projectId: "selbsttest-geraden",
+  storageBucket: "selbsttest-geraden.firebasestorage.app",
+  messagingSenderId: "347690680430",
+  appId: "1:347690680430:web:e39ecc5e4a9847dfa5667f",
+  measurementId: "G-7Z4NBLC2P6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function renderAll() {
+  const container = document.getElementById('logContainer');
+  container.innerHTML = '<p class="empty">Lade Daten...</p>';
+
+  db.collection('ergebnisse')
+    .orderBy('timestamp', 'desc')
+    .get()
+    .then(snapshot => {
+      const docs = [];
+      snapshot.forEach(doc => docs.push(doc.data()));
+
+      document.getElementById('totalCount').textContent = docs.length;
+
+      if (docs.length === 0) {
+        container.innerHTML = '<p class="empty">Bisher keine Teilnahmen.</p>';
+        document.getElementById('avgScore').textContent = '-';
+        return;
+      }
+
+      const avg = Math.round(docs.reduce((s, e) => s + e.percent, 0) / docs.length);
+      document.getElementById('avgScore').textContent = avg + '%';
+
+      let html = '<table><thead><tr><th>Name</th><th>Datum</th><th>Ergebnis</th></tr></thead><tbody>';
+      docs.forEach(entry => {
+        const badgeClass = entry.percent >= 80 ? 'good' : entry.percent >= 50 ? 'ok' : 'bad';
+        html += `<tr>
+          <td>${escapeHtml(entry.name)}</td>
+          <td style="color:#6b7280;">${escapeHtml(entry.date || '')}</td>
+          <td><span class="badge ${badgeClass}">${escapeHtml(entry.score)} (${entry.percent}%)</span></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    })
+    .catch(err => {
+      console.error('Fehler beim Laden:', err);
+      container.innerHTML = '<p class="empty" style="color:var(--red);">Fehler beim Laden der Daten. Firestore aktiviert?</p>';
+    });
+}
+
+function clearLog() {
+  if (confirm('Alle Teilnahmen unwiderruflich löschen?')) {
+    db.collection('ergebnisse')
+      .get()
+      .then(snapshot => {
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        return batch.commit();
+      })
+      .then(() => renderAll())
+      .catch(err => {
+        console.error('Fehler beim Löschen:', err);
+        alert('Fehler beim Löschen.');
+      });
+  }
+}
+
+function exportCSV() {
+  db.collection('ergebnisse')
+    .orderBy('timestamp', 'desc')
+    .get()
+    .then(snapshot => {
+      const docs = [];
+      snapshot.forEach(doc => docs.push(doc.data()));
+      if (docs.length === 0) { alert('Keine Daten zum Exportieren.'); return; }
+      let csv = 'Name;Datum;Ergebnis;Prozent\n';
+      docs.forEach(entry => {
+        csv += `"${entry.name}";"${entry.date}";"${entry.score}";${entry.percent}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Selbsttest_Geraden_Teilnahmen.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(err => console.error(err));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderAll();
+  document.getElementById('refreshBtn').addEventListener('click', renderAll);
+  document.getElementById('clearBtn').addEventListener('click', clearLog);
+  document.getElementById('exportBtn').addEventListener('click', exportCSV);
+});
+</script>
+</body>
+</html>
