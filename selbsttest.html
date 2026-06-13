@@ -153,9 +153,10 @@
     <label for="studentCourse">Kurs:</label>
     <select id="studentCourse">
       <option value="">— Bitte wählen —</option>
-      <option value="Kurz">Kurz</option>
-      <option value="Lüttge">Lüttge</option>
-      <option value="Kraemer">Kraemer</option>
+      <option value="GK1">GK1</option>
+      <option value="GK2">GK2</option>
+      <option value="GK3">GK3</option>
+      <option value="GK4">GK4</option>
     </select>
     <p style="font-size:0.85rem;color:var(--gray);margin-top:0.5rem;">Dein Ergebnis wird nach dem Auswerten gespeichert.</p>
   </div>
@@ -530,10 +531,13 @@ function evaluate() {
   saveLog(log);
   renderLog();
 
+  const oneYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
   db.collection('ergebnisse').add({
     name, course, score: `${correct}/${total}`, percent: pct,
     date: new Date().toLocaleString('de-DE'),
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    expireAt: oneYear
   }).catch(err => console.error('Fehler beim Speichern:', err));
 }
 

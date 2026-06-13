@@ -113,12 +113,39 @@
     body { padding: 1rem 0.5rem; }
     .card { padding: 1rem; }
   }
+
+  .pw-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .pw-box {
+    background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem; max-width: 360px; width: 90%; text-align: center;
+  }
+  .pw-box h2 { font-size: 1.2rem; margin-bottom: 0.25rem; }
+  .pw-box p { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.25rem; }
+  .pw-box input[type="password"] {
+    width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 1rem; outline: none; margin-bottom: 0.75rem;
+  }
+  .pw-box input[type="password"]:focus { border-color: var(--primary); }
+  .pw-hidden { display: none; }
 </style>
 <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div class="container">
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <h2>Passwort geschützt</h2>
+    <p>Gib das Lehrer-Passwort ein, um die Ergebnisse zu sehen.</p>
+    <input type="password" id="pwInput" placeholder="Passwort">
+    <button class="btn-primary" id="pwBtn" style="width:100%;">Öffnen</button>
+    <p id="pwError" style="color:var(--red);font-size:0.85rem;margin-top:0.5rem;display:none;">Falsches Passwort.</p>
+  </div>
+</div>
+
+<div class="container pw-hidden" id="mainContent">
   <h1>Selbsttest Geraden</h1>
   <p class="subtitle">Teilnahmen &Uuml;bersicht</p>
 
@@ -153,6 +180,7 @@
       &Ouml;ffne den <a href="selbsttest.html" style="color:var(--primary);">Selbsttest</a>, um am Test teilzunehmen.
     </p>
   </div>
+</div>
 </div>
 
 <script>
@@ -198,10 +226,22 @@ function renderAll() {
     .orderBy('timestamp', 'desc')
     .get()
     .then(snapshot => {
-      allDocs = [];
-      snapshot.forEach(doc => allDocs.push(doc.data()));
+      const docs = [];
+      snapshot.forEach(doc => docs.push({ ref: doc.ref, data: doc.data() }));
 
-      document.getElementById('totalCount').textContent = allDocs.length;
+      const now = new Date();
+      const expired = docs.filter(d => d.data.expireAt && d.data.expireAt.toDate() < now);
+      const valid = docs.filter(d => !d.data.expireAt || d.data.expireAt.toDate() >= now);
+
+      if (expired.length > 0) {
+        const batch = db.batch();
+        expired.forEach(d => batch.delete(d.ref));
+        batch.commit().catch(err => console.error('Fehler beim Löschen abgelaufener Einträge:', err));
+      }
+
+      allDocs = valid.map(d => d.data);
+
+      document.getElementById('totalCount').textContent = allDocs.length + (expired.length > 0 ? ` (${expired.length} abgelaufen)` : '');
 
       if (allDocs.length === 0) {
         container.innerHTML = '<p class="empty">Bisher keine Teilnahmen.</p>';
@@ -214,7 +254,7 @@ function renderAll() {
       const selectedCourse = document.getElementById('courseFilter').value;
       const filtered = selectedCourse ? allDocs.filter(d => d.course === selectedCourse) : allDocs;
 
-      document.getElementById('totalCount').textContent = filtered.length + (selectedCourse ? ` (${allDocs.length} gesamt)` : '');
+      document.getElementById('totalCount').textContent = filtered.length + (selectedCourse ? ` (${allDocs.length} gesamt)` : '') + (expired.length > 0 ? ` · ${expired.length} abgelaufen` : '');
 
       const avg = filtered.length > 0 ? Math.round(filtered.reduce((s, e) => s + e.percent, 0) / filtered.length) : 0;
       document.getElementById('avgScore').textContent = (filtered.length > 0 ? avg + '%' : '-') + (selectedCourse && allDocs.length > 0 ? ` (${Math.round(allDocs.reduce((s, e) => s + e.percent, 0) / allDocs.length)}% gesamt)` : '');
@@ -277,8 +317,22 @@ function exportCSV() {
     .catch(err => console.error(err));
 }
 
+const PASSWORD = 'lehrer2025';
+
+function checkPassword() {
+  const input = document.getElementById('pwInput').value;
+  if (input === PASSWORD) {
+    document.getElementById('pwOverlay').classList.add('pw-hidden');
+    document.getElementById('mainContent').classList.remove('pw-hidden');
+    renderAll();
+  } else {
+    document.getElementById('pwError').style.display = 'block';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  renderAll();
+  document.getElementById('pwBtn').addEventListener('click', checkPassword);
+  document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
   document.getElementById('refreshBtn').addEventListener('click', renderAll);
   document.getElementById('clearBtn').addEventListener('click', clearLog);
   document.getElementById('exportBtn').addEventListener('click', exportCSV);
