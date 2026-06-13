@@ -34,50 +34,28 @@
     margin-bottom: 1.5rem;
   }
   .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
-  input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 0.6rem 0.8rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
+  input[type="text"] {
+    width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;
   }
-  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+  input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
   .question {
-    margin-bottom: 1.75rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;
   }
   .question:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
   .q-text { font-weight: 600; margin-bottom: 0.75rem; font-size: 0.95rem; }
   .q-text .num {
-    display: inline-block;
-    background: var(--primary);
-    color: white;
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    border-radius: 50%;
-    font-size: 0.8rem;
-    line-height: 24px;
-    margin-right: 0.5rem;
+    display: inline-block; background: var(--primary); color: white;
+    width: 24px; height: 24px; text-align: center; border-radius: 50%;
+    font-size: 0.8rem; line-height: 24px; margin-right: 0.5rem;
   }
 
-  /* --- Vektor-Darstellung (große Klammer) --- */
   .vec { display: inline-flex; align-items: stretch; vertical-align: middle; margin: 0 0.15rem; }
   .vec .bk-l { width: 6px; border-left: 2px solid #334155; border-top: 2px solid #334155; border-bottom: 2px solid #334155; border-radius: 4px 0 0 4px; }
   .vec .bk-r { width: 6px; border-right: 2px solid #334155; border-top: 2px solid #334155; border-bottom: 2px solid #334155; border-radius: 0 4px 4px 0; }
   .vec .inner { display: flex; flex-direction: column; padding: 0.15rem 0.35rem; }
   .vec .inner span { line-height: 1.6; text-align: center; }
-  .vec .inner input[type="number"] {
-    width: 3rem; height: 1.8rem; padding: 0.1rem; text-align: center;
-    font-size: 0.9rem; margin: 0.1rem 0;
-  }
-  .vec .inner input[type="number"].sm { width: 2.2rem; }
-  .vec-label { font-style: italic; font-weight: 500; margin-right: 0.3rem; }
 
-  /* --- Options (Radio) --- */
   .option {
     display: flex; align-items: flex-start; gap: 0.6rem;
     padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer;
@@ -85,14 +63,22 @@
   }
   .option:hover { background: var(--primary-light); }
   .option input[type="radio"] { margin-top: 0.3rem; accent-color: var(--primary); flex-shrink: 0; }
-  .option input[type="radio"]:disabled { cursor: not-allowed; }
+  .option input[type="checkbox"] { margin-top: 0.3rem; accent-color: var(--primary); flex-shrink: 0; }
+  .option input:disabled { cursor: not-allowed; }
   .option.correct { background: #dcfce7; }
-  .option.correct input[type="radio"] { accent-color: var(--green); }
+  .option.correct input { accent-color: var(--green); }
   .option.wrong { background: #fee2e2; }
-  .option.wrong input[type="radio"] { accent-color: var(--red); }
+  .option.wrong input { accent-color: var(--red); }
+  .option.missed { background: #fef9c3; }
+  .option.missed input { accent-color: var(--orange); }
   .option.disabled { opacity: 0.85; }
 
-  /* --- Drag & Drop Sortierung --- */
+  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; }
+  .tag.mc { background: #dbeafe; color: #1d4ed8; }
+  .tag.tf { background: #fef3c7; color: #d97706; }
+  .tag.ms { background: #ede9fe; color: #7c3aed; }
+  .tag.dd { background: #fce7f3; color: #db2777; }
+
   .sort-list { list-style: none; padding: 0; }
   .sort-item {
     display: flex; align-items: center; gap: 0.75rem;
@@ -113,10 +99,13 @@
   .sort-item .sn.ok { background: #dcfce7; color: var(--green); }
   .sort-item .sn.wrong { background: #fee2e2; color: var(--red); }
   .sort-item .sn.none { background: #e2e8f0; color: var(--gray); }
-  .sort-item.order-correct { border-color: var(--green); background: #f0fdf4; }
-  .sort-item.order-wrong { border-color: var(--red); background: #fef2f2; }
 
-  /* --- Feedback --- */
+  select {
+    padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; background: white; cursor: pointer; outline: none;
+  }
+  select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+
   .feedback { margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem; display: none; }
   .feedback.show { display: block; }
   .feedback.correct { background: #f0fdf4; color: var(--green); border-left: 4px solid var(--green); }
@@ -161,7 +150,7 @@
     <div class="card-title">Teilnehmer</div>
     <label for="studentName">Dein Vorname:</label>
     <input type="text" id="studentName" placeholder="Vorname">
-    <p style="font-size:0.85rem;color:var(--gray);margin-top:0.5rem;">Dein Ergebnis wird nach dem Auswerten angezeigt.</p>
+    <p style="font-size:0.85rem;color:var(--gray);margin-top:0.5rem;">Dein Ergebnis wird nach dem Auswerten gespeichert.</p>
   </div>
 
   <div class="card" id="testCard">
@@ -194,17 +183,7 @@
 </div>
 
 <script>
-function vec3(a, b, c) {
-  return `<span class="vec"><span class="bk-l"></span><span class="inner"><span>${a}</span><span>${b}</span><span>${c}</span></span><span class="bk-r"></span></span>`;
-}
-
-function vec3input(name, cls) {
-  return `<span class="vec"><span class="bk-l"></span><span class="inner"><input type="number" class="${cls||''}" name="${name}_x" step="any"><input type="number" class="${cls||''}" name="${name}_y" step="any"><input type="number" class="${cls||''}" name="${name}_z" step="any"></span><span class="bk-r"></span></span>`;
-}
-
-function renderVector(v) {
-  return Array.isArray(v) ? vec3(v[0], v[1], v[2]) : v;
-}
+function vec3(a,b,c){return`<span class="vec"><span class="bk-l"></span><span class="inner"><span>${a}</span><span>${b}</span><span>${c}</span></span><span class="bk-r"></span></span>`;}
 
 const firebaseConfig = {
   apiKey: "AIzaSyAD6C3XarkBvX_kFzmPMxHAsj7DSlmxXss",
@@ -212,8 +191,8 @@ const firebaseConfig = {
   projectId: "selbsttest-geraden",
   storageBucket: "selbsttest-geraden.firebasestorage.app",
   messagingSenderId: "347690680430",
-  appId: "1:347690680430:web:e39ecc5e4a9847dfa5667f",
-  measurementId: "G-7Z4NBLC2P6"
+  appId: "1:347690680430:web:b772b6ae66d830f1a5667f",
+  measurementId: "G-E6XRH37MNC"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -232,26 +211,32 @@ const questions = [
     correct: [0, 1, 2, 4, 3]
   },
   {
+    type: 'dropdown',
+    text: 'Zwei Geraden im Raum, deren Richtungsvektoren nicht parallel sind und die sich nicht schneiden, heißen …',
+    options: ['identisch', 'parallel', 'windschief', 'schneidend'],
+    correct: 2
+  },
+  {
     type: 'radio',
     text: 'Gegeben: ' + vec3(2,4,6) + ' und ' + vec3(1,2,3) + '. Sind die Vektoren linear abhängig?',
     options: [
       'Ja, ' + vec3(2,4,6) + ' = 2 &middot; ' + vec3(1,2,3),
       'Ja, ' + vec3(1,2,3) + ' = 2 &middot; ' + vec3(2,4,6),
-      'Nein, die Vektoren sind linear unabhängig',
+      'Nein, sie sind linear unabhängig',
       'Ja, ' + vec3(2,4,6) + ' = &minus;2 &middot; ' + vec3(1,2,3)
     ],
     correct: 0
   },
   {
-    type: 'radio',
-    text: 'Gegeben: ' + vec3(1,-1,2) + ' und ' + vec3(-3,3,-6) + '. Sind die Vektoren linear abhängig?',
+    type: 'multiselect',
+    text: 'Welche der folgenden Aussagen sind richtig? <span style="font-weight:400;font-size:0.85rem;color:var(--gray);">(mehrere Antworten möglich)</span>',
     options: [
-      'Ja, ' + vec3(1,-1,2) + ' = 3 &middot; ' + vec3(-3,3,-6),
-      'Ja, ' + vec3(1,-1,2) + ' = &minus;3 &middot; ' + vec3(-3,3,-6),
-      'Ja, ' + vec3(-3,3,-6) + ' = &minus;3 &middot; ' + vec3(1,-1,2),
-      'Nein, die Vektoren sind linear unabhängig'
+      'Sind die Richtungsvektoren linear abhängig, dann sind die Geraden parallel oder identisch.',
+      'Windschiefe Geraden besitzen genau einen Schnittpunkt.',
+      'Bei linear unabhängigen Richtungsvektoren setzt man die Gleichungen gleich.',
+      'Identische Geraden haben genau einen gemeinsamen Punkt.'
     ],
-    correct: 2
+    correct: [0, 2]
   },
   {
     type: 'radio',
@@ -260,10 +245,9 @@ const questions = [
     correct: 0
   },
   {
-    type: 'radio',
-    text: 'Gegeben: g: ' + vec3(0,0,0) + ' + r &middot; ' + vec3(1,1,1) + '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h: ' + vec3(1,0,0) + ' + s &middot; ' + vec3(2,2,2) + '. Die Geraden sind …',
-    options: ['identisch', 'parallel', 'windschief', 'schneidend'],
-    correct: 1
+    type: 'truefalse',
+    text: 'Bewerte die Aussage:<br><b>„Zwei Geraden mit linear abhängigen Richtungsvektoren sind immer identisch.“</b>',
+    correct: false
   },
   {
     type: 'radio',
@@ -273,20 +257,26 @@ const questions = [
   },
   {
     type: 'radio',
-    text: 'Welche Aussage ist richtig?',
+    text: 'Was gilt für die Richtungsvektoren zweier paralleler (nicht identischer) Geraden?',
     options: [
-      'Windschiefe Geraden sind stets parallel zueinander.',
-      'Parallele Geraden haben unendlich viele gemeinsame Punkte.',
-      'Sich schneidende Geraden liegen in einer gemeinsamen Ebene.',
-      'Identische Geraden haben genau einen Schnittpunkt.'
+      'Sie sind linear abhängig (Vielfache voneinander).',
+      'Sie sind linear unabhängig.',
+      'Sie sind orthogonal zueinander.',
+      'Sie haben unterschiedliche Längen.'
     ],
-    correct: 2
+    correct: 0
   },
   {
     type: 'radio',
     text: 'Gegeben: g: ' + vec3(3,1,2) + ' + r &middot; ' + vec3(2,0,-1) + '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h: ' + vec3(1,2,0) + ' + s &middot; ' + vec3(4,0,-2) + '. Die Geraden sind …',
     options: ['identisch', 'parallel', 'windschief', 'schneidend'],
     correct: 1
+  },
+  {
+    type: 'radio',
+    text: 'Gegeben: g: ' + vec3(2,1,3) + ' + r &middot; ' + vec3(1,0,-1) + '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h: ' + vec3(4,1,1) + ' + s &middot; ' + vec3(-1,0,1) + '. Die Geraden sind …',
+    options: ['identisch', 'parallel', 'windschief', 'schneidend'],
+    correct: 0
   }
 ];
 
@@ -305,38 +295,53 @@ function renderQuestions() {
     div.dataset.type = q.type;
 
     if (q.type === 'ordering') {
-      const innerHtml = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
+      div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         <ul class="sort-list" id="sortList${i}">
           ${q.items.map((item, j) => `
-            <li class="sort-item" draggable="true" data-orig-index="${j}" data-index="${j}">
+            <li class="sort-item" draggable="true" data-orig-index="${j}">
               <span class="handle">&#x2630;</span>
-              <span class="sn none" id="orderNr${i}_${j}">${j+1}</span>
+              <span class="sn none">${j+1}</span>
               <span>${item}</span>
             </li>
           `).join('')}
         </ul>
         <div class="feedback" id="fb${i}"></div>`;
-      div.innerHTML = innerHtml;
       container.appendChild(div);
-
-      const list = document.getElementById(`sortList${i}`);
-      setupDragSort(list, i);
-    } else {
-      const innerHtml = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
+      const list = div.querySelector('.sort-list');
+      setupDragSort(list);
+    } else if (q.type === 'dropdown') {
+      div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
+        <select id="sel${i}">
+          <option value="">— Bitte wählen —</option>
+          ${q.options.map((opt, j) => `<option value="${j}">${opt}</option>`).join('')}
+        </select>
+        <div class="feedback" id="fb${i}"></div>`;
+      container.appendChild(div);
+    } else if (q.type === 'truefalse') {
+      div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
+        <label class="option" data-idx="0"><input type="radio" name="q${i}" value="true"> <span>Wahr</span></label>
+        <label class="option" data-idx="1"><input type="radio" name="q${i}" value="false"> <span>Falsch</span></label>
+        <div class="feedback" id="fb${i}"></div>`;
+      container.appendChild(div);
+    } else if (q.type === 'multiselect') {
+      div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         ${q.options.map((opt, j) => `
-          <label class="option" data-optindex="${j}">
-            <input type="radio" name="q${i}" value="${j}">
-            <span>${opt}</span>
-          </label>
+          <label class="option" data-idx="${j}"><input type="checkbox" name="q${i}" value="${j}"> <span>${opt}</span></label>
         `).join('')}
         <div class="feedback" id="fb${i}"></div>`;
-      div.innerHTML = innerHtml;
+      container.appendChild(div);
+    } else {
+      div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
+        ${q.options.map((opt, j) => `
+          <label class="option" data-idx="${j}"><input type="radio" name="q${i}" value="${j}"> <span>${opt}</span></label>
+        `).join('')}
+        <div class="feedback" id="fb${i}"></div>`;
       container.appendChild(div);
     }
   });
 }
 
-function setupDragSort(list, qIdx) {
+function setupDragSort(list) {
   let draggedItem = null;
   list.querySelectorAll('.sort-item').forEach(item => {
     item.addEventListener('dragstart', e => {
@@ -356,54 +361,33 @@ function setupDragSort(list, qIdx) {
         item.classList.add('drag-over');
       }
     });
-    item.addEventListener('dragleave', () => { item.classList.remove('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
     item.addEventListener('drop', e => {
       e.preventDefault();
       item.classList.remove('drag-over');
       if (draggedItem && item !== draggedItem) {
         const rect = item.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        if (e.clientY < midY) {
+        if (e.clientY < rect.top + rect.height / 2)
           list.insertBefore(draggedItem, item);
-        } else {
+        else
           list.insertBefore(draggedItem, item.nextSibling);
-        }
-        updateOrderNumbers(list, qIdx);
+        updateOrderNumbers(list);
       }
     });
-    item.addEventListener('touchstart', e => { /* basic touch support */ }, { passive: true });
   });
 }
 
-function updateOrderNumbers(list, qIdx) {
-  const items = list.querySelectorAll('.sort-item');
-  items.forEach((item, idx) => {
-    const numSpan = item.querySelector('.sn');
-    numSpan.textContent = idx + 1;
-    numSpan.className = 'sn none';
+function updateOrderNumbers(list) {
+  list.querySelectorAll('.sort-item').forEach((item, idx) => {
+    const ns = item.querySelector('.sn');
+    ns.textContent = idx + 1;
+    ns.className = 'sn none';
   });
-}
-
-function evaluateOrdering(list, q, i) {
-  const items = list.querySelectorAll('.sort-item');
-  let correct = true;
-  items.forEach((item, idx) => {
-    const origIdx = parseInt(item.dataset.origIndex);
-    const numSpan = item.querySelector('.sn');
-    const expectedPos = q.correct.indexOf(origIdx);
-    if (idx === expectedPos) {
-      numSpan.className = 'sn ok';
-    } else {
-      numSpan.className = 'sn wrong';
-      correct = false;
-    }
-  });
-  return correct;
 }
 
 function evaluate() {
   const name = document.getElementById('studentName').value.trim();
-  if (!name) { alert('Bitte gib deinen Namen ein.'); return; }
+  if (!name) { alert('Bitte gib deinen Vornamen ein.'); return; }
 
   let correct = 0;
   let answered = 0;
@@ -411,56 +395,123 @@ function evaluate() {
 
   questions.forEach((q, i) => {
     const qDiv = document.querySelector(`.question[data-index="${i}"]`);
-    const feedback = document.getElementById(`fb${i}`);
+    const fb = document.getElementById(`fb${i}`);
 
     if (q.type === 'ordering') {
-      const list = document.getElementById(`sortList${i}`);
-      const isCorrect = evaluateOrdering(list, q, i);
-      if (isCorrect) correct++;
+      const list = qDiv.querySelector('.sort-list');
+      const items = list.querySelectorAll('.sort-item');
+      let ok = true;
+      items.forEach((item, idx) => {
+        const origIdx = parseInt(item.dataset.origIndex);
+        const ns = item.querySelector('.sn');
+        if (idx === q.correct.indexOf(origIdx)) {
+          ns.className = 'sn ok';
+        } else {
+          ns.className = 'sn wrong';
+          ok = false;
+        }
+      });
       answered++;
-      feedback.textContent = isCorrect ? 'Richtig!' : 'Falsche Reihenfolge.';
-      feedback.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
-      list.querySelectorAll('.sort-item').forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
+      if (ok) correct++;
+      fb.textContent = ok ? 'Richtig sortiert!' : 'Die Reihenfolge ist nicht korrekt.';
+      fb.className = `feedback show ${ok ? 'correct' : 'wrong'}`;
+      items.forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
+    } else if (q.type === 'dropdown') {
+      const sel = document.getElementById(`sel${i}`);
+      const val = sel.value;
+      if (val !== '') {
+        answered++;
+        if (parseInt(val) === q.correct) {
+          correct++;
+          fb.textContent = 'Richtig!';
+          fb.className = 'feedback show correct';
+        } else {
+          fb.textContent = `Falsch. Richtige Antwort: "${q.options[q.correct]}"`;
+          fb.className = 'feedback show wrong';
+        }
+      } else {
+        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.className = 'feedback show wrong';
+      }
+      sel.disabled = true;
+    } else if (q.type === 'truefalse') {
+      const selected = qDiv.querySelector('input[type="radio"]:checked');
+      if (selected) {
+        answered++;
+        const val = selected.value === 'true';
+        if (val === q.correct) {
+          correct++;
+          fb.textContent = 'Richtig!';
+          fb.className = 'feedback show correct';
+        } else {
+          fb.textContent = `Falsch. Richtige Antwort: "${q.correct ? 'Wahr' : 'Falsch'}"`;
+          fb.className = 'feedback show wrong';
+        }
+      } else {
+        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${q.correct ? 'Wahr' : 'Falsch'}"`;
+        fb.className = 'feedback show wrong';
+      }
+      qDiv.querySelectorAll('.option').forEach(o => {
+        o.classList.add('disabled');
+        o.querySelector('input').disabled = true;
+      });
+      const correctOpt = qDiv.querySelector(`.option[data-idx="${q.correct ? '0' : '1'}"]`);
+      if (correctOpt) correctOpt.classList.add('correct');
+      const wrongOpt = selected ? qDiv.querySelector(`.option[data-idx="${selected.value === 'true' ? '0' : '1'}"]`) : null;
+      if (wrongOpt && !wrongOpt.classList.contains('correct')) wrongOpt.classList.add('wrong');
+    } else if (q.type === 'multiselect') {
+      const checks = qDiv.querySelectorAll('input[type="checkbox"]');
+      const selected = [];
+      checks.forEach((c, j) => { if (c.checked) selected.push(j); });
+      qDiv.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+      checks.forEach(c => c.disabled = true);
+      if (selected.length > 0) answered++;
+      const correctArr = q.correct;
+      let allCorrect = true;
+      qDiv.querySelectorAll('.option').forEach((opt, j) => {
+        if (correctArr.includes(j) && selected.includes(j)) opt.classList.add('correct');
+        else if (correctArr.includes(j) && !selected.includes(j)) { opt.classList.add('missed'); allCorrect = false; }
+        else if (!correctArr.includes(j) && selected.includes(j)) { opt.classList.add('wrong'); allCorrect = false; }
+      });
+      if (allCorrect && selected.length > 0) { correct++; fb.textContent = 'Richtig! Alle Aussagen korrekt ausgewählt.'; fb.className = 'feedback show correct'; }
+      else if (selected.length === 0) { fb.textContent = 'Nicht beantwortet.'; fb.className = 'feedback show wrong'; }
+      else { fb.textContent = 'Nicht alle Aussagen richtig ausgewählt.'; fb.className = 'feedback show wrong'; }
     } else {
-      const selected = document.querySelector(`input[name="q${i}"]:checked`);
-      const options = qDiv.querySelectorAll('.option');
-      options.forEach(opt => {
-        opt.classList.add('disabled');
-        const radio = opt.querySelector('input[type="radio"]');
-        radio.disabled = true;
-        const idx = parseInt(opt.dataset.optindex);
-        if (idx === q.correct) opt.classList.add('correct');
-        if (selected && parseInt(selected.value) === idx && idx !== q.correct) opt.classList.add('wrong');
+      const selected = qDiv.querySelector('input[type="radio"]:checked');
+      qDiv.querySelectorAll('.option').forEach(o => {
+        o.classList.add('disabled');
+        const inp = o.querySelector('input');
+        inp.disabled = true;
+        const idx = parseInt(o.dataset.idx);
+        if (idx === q.correct) o.classList.add('correct');
+        if (selected && parseInt(selected.value) === idx && idx !== q.correct) o.classList.add('wrong');
       });
       if (selected) {
         answered++;
-        const val = parseInt(selected.value);
-        if (val === q.correct) {
+        if (parseInt(selected.value) === q.correct) {
           correct++;
-          feedback.textContent = 'Richtig!';
-          feedback.className = 'feedback show correct';
+          fb.textContent = 'Richtig!';
+          fb.className = 'feedback show correct';
         } else {
-          feedback.textContent = `Falsch. Richtige Antwort: "${q.options[q.correct]}"`;
-          feedback.className = 'feedback show wrong';
+          fb.textContent = `Falsch. Richtige Antwort: "${q.options[q.correct]}"`;
+          fb.className = 'feedback show wrong';
         }
       } else {
-        feedback.textContent = `Nicht beantwortet. Richtige Antwort: "${q.options[q.correct]}"`;
-        feedback.className = 'feedback show wrong';
+        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.className = 'feedback show wrong';
       }
     }
   });
 
-  const scoreDisplay = document.getElementById('scoreDisplay');
+  document.getElementById('scoreDisplay').textContent = `${correct} / ${total}`;
   const pct = Math.round((correct / total) * 100);
-  scoreDisplay.textContent = `${correct} / ${total}`;
-  scoreDisplay.className = 'score ' + (pct >= 80 ? 'good' : pct >= 50 ? 'ok' : 'bad');
+  document.getElementById('scoreDisplay').className = 'score ' + (pct >= 80 ? 'good' : pct >= 50 ? 'ok' : 'bad');
 
   const label = document.getElementById('resultLabel');
   if (pct === 100) label.textContent = 'Perfekt – alle Lagebeziehungen sicher!';
   else if (pct >= 80) label.textContent = 'Gut gemacht!';
   else if (pct >= 50) label.textContent = 'Ganz ok, übe weiter.';
   else label.textContent = 'Weiter üben – lies die Theorie nochmal nach.';
-
   document.getElementById('resultDetails').textContent = `${answered} von ${total} Fragen beantwortet.`;
   document.getElementById('resultCard').classList.remove('hidden');
   document.getElementById('submitBtn').disabled = true;
@@ -471,9 +522,7 @@ function evaluate() {
   renderLog();
 
   db.collection('ergebnisse').add({
-    name,
-    score: `${correct}/${total}`,
-    percent: pct,
+    name, score: `${correct}/${total}`, percent: pct,
     date: new Date().toLocaleString('de-DE'),
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).catch(err => console.error('Fehler beim Speichern:', err));
@@ -481,26 +530,45 @@ function evaluate() {
 
 function showCorrectAnswers() {
   questions.forEach((q, i) => {
-    const feedback = document.getElementById(`fb${i}`);
+    const qDiv = document.querySelector(`.question[data-index="${i}"]`);
+    const fb = document.getElementById(`fb${i}`);
     if (q.type === 'ordering') {
-      if (!feedback.textContent.includes('Richtig')) {
-        feedback.textContent = 'Richtige Reihenfolge: 1. ' + q.items[q.correct[0]] + ', 2. ' + q.items[q.correct[1]] + ', 3. ' + q.items[q.correct[2]] + ', 4. ' + q.items[q.correct[3]] + ', 5. ' + q.items[q.correct[4]];
-        feedback.className = 'feedback show correct';
+      if (!fb.textContent.includes('Richtig')) {
+        fb.textContent = 'Richtige Reihenfolge: 1. ' + q.items[q.correct[0]] + ', 2. ' + q.items[q.correct[1]] + ', 3. ' + q.items[q.correct[2]] + ', 4. ' + q.items[q.correct[3]] + ', 5. ' + q.items[q.correct[4]];
+        fb.className = 'feedback show correct';
       }
-      const list = document.getElementById(`sortList${i}`);
-      list.querySelectorAll('.sort-item').forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
-    } else {
-      const options = document.querySelectorAll(`.question[data-index="${i}"] .option`);
-      options.forEach(opt => {
-        opt.classList.add('disabled');
-        const radio = opt.querySelector('input[type="radio"]');
-        radio.disabled = true;
-        const idx = parseInt(opt.dataset.optindex);
-        if (idx === q.correct) opt.classList.add('correct');
+      qDiv.querySelectorAll('.sort-item').forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
+    } else if (q.type === 'dropdown') {
+      document.getElementById(`sel${i}`).disabled = true;
+      if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
+        fb.textContent = `Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.className = 'feedback show correct';
+      }
+    } else if (q.type === 'truefalse') {
+      qDiv.querySelectorAll('.option').forEach(o => { o.classList.add('disabled'); o.querySelector('input').disabled = true; });
+      const correctOpt = qDiv.querySelector(`.option[data-idx="${q.correct ? '0' : '1'}"]`);
+      if (correctOpt) correctOpt.classList.add('correct');
+      if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
+        fb.textContent = `Richtige Antwort: "${q.correct ? 'Wahr' : 'Falsch'}"`;
+        fb.className = 'feedback show correct';
+      }
+    } else if (q.type === 'multiselect') {
+      qDiv.querySelectorAll('.option').forEach(o => { o.classList.add('disabled'); o.querySelector('input').disabled = true; });
+      q.correct.forEach(idx => {
+        const opt = qDiv.querySelector(`.option[data-idx="${idx}"]`);
+        if (opt) opt.classList.add('correct');
       });
-      if (!feedback.textContent.includes('Richtig') && !feedback.textContent.includes('Falsch') && !feedback.textContent.includes('Nicht')) {
-        feedback.textContent = `Richtige Antwort: "${q.options[q.correct]}"`;
-        feedback.className = 'feedback show correct';
+      if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Nicht')) {
+        fb.textContent = 'Richtige Antworten: ' + q.correct.map(idx => '"' + q.options[idx] + '"').join(', ');
+        fb.className = 'feedback show correct';
+      }
+    } else {
+      qDiv.querySelectorAll('.option').forEach(o => { o.classList.add('disabled'); o.querySelector('input').disabled = true; });
+      const correctOpt = qDiv.querySelector(`.option[data-idx="${q.correct}"]`);
+      if (correctOpt) correctOpt.classList.add('correct');
+      if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
+        fb.textContent = `Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.className = 'feedback show correct';
       }
     }
   });
@@ -508,8 +576,9 @@ function showCorrectAnswers() {
 }
 
 function resetTest() {
-  document.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = false; r.disabled = false; });
-  document.querySelectorAll('.option').forEach(o => o.classList.remove('correct', 'wrong', 'disabled'));
+  document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(r => { r.checked = false; r.disabled = false; });
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('correct', 'wrong', 'missed', 'disabled'));
+  document.querySelectorAll('select').forEach(s => { s.value = ''; s.disabled = false; });
   document.querySelectorAll('.feedback').forEach(f => { f.className = 'feedback'; f.textContent = ''; });
   document.querySelectorAll('.sort-item').forEach(item => {
     item.draggable = true; item.style.cursor = 'grab';
