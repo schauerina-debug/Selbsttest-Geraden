@@ -77,21 +77,26 @@
 
   .sort-list { list-style: none; padding: 0; }
   .sort-item {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.7rem 1rem; margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.75rem; margin-bottom: 0.4rem;
     background: #f8fafc; border: 1px solid var(--border);
-    border-radius: 8px; cursor: grab;
-    transition: background 0.15s, transform 0.1s;
-    user-select: none;
+    border-radius: 8px; user-select: none;
   }
-  .sort-item:active { cursor: grabbing; }
-  .sort-item.dragging { opacity: 0.5; }
-  .sort-item.drag-over { border-color: var(--primary); background: var(--primary-light); transform: scale(1.02); }
-  .sort-item .handle { color: var(--gray); font-size: 1.2rem; flex-shrink: 0; }
   .sort-item .sn { display: inline-flex; align-items: center; justify-content: center;
     width: 24px; height: 24px; border-radius: 50%;
-    font-size: 0.8rem; font-weight: 600; flex-shrink: 0;
+    font-size: 0.8rem; font-weight: 600; flex-shrink: 0; min-width: 24px;
   }
+  .sort-item .move-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border: 1px solid var(--border);
+    border-radius: 6px; background: white; cursor: pointer;
+    font-size: 1rem; color: var(--gray); flex-shrink: 0; padding: 0; line-height: 1;
+    transition: background 0.15s;
+  }
+  .sort-item .move-btn:hover { background: var(--primary-light); color: var(--primary); }
+  .sort-item .move-btn:active { transform: scale(0.93); }
+  .sort-item .move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .sort-item .move-btn:disabled:active { transform: none; }
   .sort-item .sn.ok { background: #dcfce7; color: var(--green); }
   .sort-item .sn.wrong { background: #fee2e2; color: var(--red); }
   .sort-item .sn.none { background: #e2e8f0; color: var(--gray); }
@@ -312,17 +317,18 @@ function renderQuestions() {
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         <ul class="sort-list" id="sortList${i}">
           ${q.items.map((item, j) => `
-            <li class="sort-item" draggable="true" data-orig-index="${j}">
-              <span class="handle">&#x2630;</span>
+            <li class="sort-item" data-orig-index="${j}">
+              <button class="move-btn" data-dir="up" tabindex="-1">&#9650;</button>
               <span class="sn none">${j+1}</span>
               <span>${item}</span>
+              <button class="move-btn" data-dir="down" tabindex="-1">&#9660;</button>
             </li>
           `).join('')}
         </ul>
         <div class="feedback" id="fb${i}"></div>`;
       container.appendChild(div);
       const list = div.querySelector('.sort-list');
-      setupDragSort(list);
+      setupSortButtons(list);
     } else if (q.type === 'dropdown') {
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         <select id="sel${i}">
@@ -369,39 +375,19 @@ function renderQuestions() {
   });
 }
 
-function setupDragSort(list) {
-  let draggedItem = null;
-  list.querySelectorAll('.sort-item').forEach(item => {
-    item.addEventListener('dragstart', e => {
-      draggedItem = item;
-      item.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    item.addEventListener('dragend', () => {
-      item.classList.remove('dragging');
-      list.querySelectorAll('.sort-item').forEach(el => el.classList.remove('drag-over'));
-      draggedItem = null;
-    });
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (item !== draggedItem) {
-        list.querySelectorAll('.sort-item').forEach(el => el.classList.remove('drag-over'));
-        item.classList.add('drag-over');
-      }
-    });
-    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-    item.addEventListener('drop', e => {
-      e.preventDefault();
-      item.classList.remove('drag-over');
-      if (draggedItem && item !== draggedItem) {
-        const rect = item.getBoundingClientRect();
-        if (e.clientY < rect.top + rect.height / 2)
-          list.insertBefore(draggedItem, item);
-        else
-          list.insertBefore(draggedItem, item.nextSibling);
-        updateOrderNumbers(list);
-      }
-    });
+function setupSortButtons(list) {
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.move-btn');
+    if (!btn) return;
+    const item = btn.closest('.sort-item');
+    if (!item) return;
+    const dir = btn.dataset.dir;
+    if (dir === 'up' && item.previousElementSibling) {
+      list.insertBefore(item, item.previousElementSibling);
+    } else if (dir === 'down' && item.nextElementSibling) {
+      list.insertBefore(item.nextElementSibling, item);
+    }
+    updateOrderNumbers(list);
   });
 }
 
@@ -445,7 +431,9 @@ function evaluate() {
       if (ok) correct++;
       fb.textContent = ok ? 'Richtig sortiert!' : 'Die Reihenfolge ist nicht korrekt.';
       fb.className = `feedback show ${ok ? 'correct' : 'wrong'}`;
-      items.forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
+      items.forEach(item => {
+        item.querySelectorAll('.move-btn').forEach(b => b.disabled = true);
+      });
     } else if (q.type === 'dropdown') {
       const sel = document.getElementById(`sel${i}`);
       const val = sel.value;
@@ -602,7 +590,9 @@ function showCorrectAnswers() {
         fb.textContent = 'Richtige Reihenfolge: ' + q.correct.map((idx, pos) => (pos + 1) + '. ' + q.items[idx]).join(', ');
         fb.className = 'feedback show correct';
       }
-      qDiv.querySelectorAll('.sort-item').forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
+      qDiv.querySelectorAll('.sort-item').forEach(item => {
+        item.querySelectorAll('.move-btn').forEach(b => b.disabled = true);
+      });
     } else if (q.type === 'dropdown') {
       document.getElementById(`sel${i}`).disabled = true;
       if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
@@ -658,7 +648,6 @@ function resetTest() {
   document.querySelectorAll('input[type="number"]').forEach(n => { n.value = ''; n.disabled = false; });
   document.querySelectorAll('.feedback').forEach(f => { f.className = 'feedback'; f.textContent = ''; });
   document.querySelectorAll('.sort-item').forEach(item => {
-    item.draggable = true; item.style.cursor = 'grab';
     item.querySelector('.sn').className = 'sn none';
   });
   document.getElementById('resultCard').classList.add('hidden');
