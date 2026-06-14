@@ -76,30 +76,26 @@
   .tag.dd { background: #fce7f3; color: #db2777; }
 
   .sort-list { list-style: none; padding: 0; }
-  .sort-item {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.6rem 0.75rem; margin-bottom: 0.4rem;
+  .order-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.5rem 0.75rem; margin-bottom: 0.4rem;
     background: #f8fafc; border: 1px solid var(--border);
-    border-radius: 8px; user-select: none;
+    border-radius: 8px;
   }
-  .sort-item .sn { display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 50%;
-    font-size: 0.8rem; font-weight: 600; flex-shrink: 0; min-width: 24px;
+  .order-row .num {
+    font-weight: 700; color: var(--gray); font-size: 0.95rem;
+    min-width: 1.5rem; flex-shrink: 0;
   }
-  .sort-item .move-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px; border: 1px solid var(--border);
-    border-radius: 6px; background: white; cursor: pointer;
-    font-size: 1rem; color: var(--gray); flex-shrink: 0; padding: 0; line-height: 1;
-    transition: background 0.15s;
+  .order-row select {
+    flex-shrink: 0; width: 180px;
+    padding: 0.4rem 0.5rem; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 0.85rem; background: white; cursor: pointer;
   }
-  .sort-item .move-btn:hover { background: var(--primary-light); color: var(--primary); }
-  .sort-item .move-btn:active { transform: scale(0.93); }
-  .sort-item .move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .sort-item .move-btn:disabled:active { transform: none; }
-  .sort-item .sn.ok { background: #dcfce7; color: var(--green); }
-  .sort-item .sn.wrong { background: #fee2e2; color: var(--red); }
-  .sort-item .sn.none { background: #e2e8f0; color: var(--gray); }
+  .order-row .item-text { font-size: 0.9rem; }
+  @media (max-width: 500px) {
+    .order-row { flex-wrap: wrap; }
+    .order-row select { width: 100%; }
+  }
 
   select {
     padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
@@ -315,20 +311,19 @@ function renderQuestions() {
 
     if (q.type === 'ordering') {
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
-        <ul class="sort-list" id="sortList${i}">
+        <div class="sort-list" id="sortList${i}">
           ${q.items.map((item, j) => `
-            <li class="sort-item" data-orig-index="${j}">
-              <button class="move-btn" data-dir="up" tabindex="-1">&#9650;</button>
-              <span class="sn none">${j+1}</span>
-              <span>${item}</span>
-              <button class="move-btn" data-dir="down" tabindex="-1">&#9660;</button>
-            </li>
+            <div class="order-row">
+              <span class="num">${j+1}.</span>
+              <select id="order${i}_${j}">
+                <option value="">— wählen —</option>
+                ${q.items.map((opt, k) => `<option value="${k}">${opt}</option>`).join('')}
+              </select>
+            </div>
           `).join('')}
-        </ul>
+        </div>
         <div class="feedback" id="fb${i}"></div>`;
       container.appendChild(div);
-      const list = div.querySelector('.sort-list');
-      setupSortButtons(list);
     } else if (q.type === 'dropdown') {
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         <select id="sel${i}">
@@ -375,30 +370,6 @@ function renderQuestions() {
   });
 }
 
-function setupSortButtons(list) {
-  list.addEventListener('click', e => {
-    const btn = e.target.closest('.move-btn');
-    if (!btn) return;
-    const item = btn.closest('.sort-item');
-    if (!item) return;
-    const dir = btn.dataset.dir;
-    if (dir === 'up' && item.previousElementSibling) {
-      list.insertBefore(item, item.previousElementSibling);
-    } else if (dir === 'down' && item.nextElementSibling) {
-      list.insertBefore(item.nextElementSibling, item);
-    }
-    updateOrderNumbers(list);
-  });
-}
-
-function updateOrderNumbers(list) {
-  list.querySelectorAll('.sort-item').forEach((item, idx) => {
-    const ns = item.querySelector('.sn');
-    ns.textContent = idx + 1;
-    ns.className = 'sn none';
-  });
-}
-
 function evaluate() {
   const name = document.getElementById('studentName').value.trim();
   if (!name) { alert('Bitte gib deinen Vornamen ein.'); return; }
@@ -414,26 +385,33 @@ function evaluate() {
     const fb = document.getElementById(`fb${i}`);
 
     if (q.type === 'ordering') {
-      const list = qDiv.querySelector('.sort-list');
-      const items = list.querySelectorAll('.sort-item');
       let ok = true;
-      items.forEach((item, idx) => {
-        const origIdx = parseInt(item.dataset.origIndex);
-        const ns = item.querySelector('.sn');
-        if (idx === q.correct.indexOf(origIdx)) {
-          ns.className = 'sn ok';
+      let allAnswered = true;
+      q.items.forEach((item, j) => {
+        const sel = document.getElementById(`order${i}_${j}`);
+        const val = sel.value;
+        if (val === '') {
+          allAnswered = false;
+          sel.style.borderColor = '#ef4444';
+          return;
+        }
+        sel.disabled = true;
+        const chosen = parseInt(val);
+        if (j === q.correct.indexOf(chosen)) {
+          sel.style.borderColor = '#16a34a';
+          sel.style.background = '#f0fdf4';
         } else {
-          ns.className = 'sn wrong';
+          sel.style.borderColor = '#ef4444';
+          sel.style.background = '#fef2f2';
           ok = false;
         }
       });
-      answered++;
-      if (ok) correct++;
-      fb.textContent = ok ? 'Richtig sortiert!' : 'Die Reihenfolge ist nicht korrekt.';
+      if (allAnswered) {
+        answered++;
+        if (ok) correct++;
+      }
+      fb.textContent = allAnswered ? (ok ? 'Richtig sortiert!' : 'Die Reihenfolge ist nicht korrekt.') : 'Nicht vollständig ausgefüllt.';
       fb.className = `feedback show ${ok ? 'correct' : 'wrong'}`;
-      items.forEach(item => {
-        item.querySelectorAll('.move-btn').forEach(b => b.disabled = true);
-      });
     } else if (q.type === 'dropdown') {
       const sel = document.getElementById(`sel${i}`);
       const val = sel.value;
@@ -590,8 +568,11 @@ function showCorrectAnswers() {
         fb.textContent = 'Richtige Reihenfolge: ' + q.correct.map((idx, pos) => (pos + 1) + '. ' + q.items[idx]).join(', ');
         fb.className = 'feedback show correct';
       }
-      qDiv.querySelectorAll('.sort-item').forEach(item => {
-        item.querySelectorAll('.move-btn').forEach(b => b.disabled = true);
+      q.items.forEach((item, j) => {
+        const sel = document.getElementById(`order${i}_${j}`);
+        sel.disabled = true;
+        sel.style.borderColor = '#16a34a';
+        sel.style.background = '#f0fdf4';
       });
     } else if (q.type === 'dropdown') {
       document.getElementById(`sel${i}`).disabled = true;
@@ -647,8 +628,9 @@ function resetTest() {
   document.querySelectorAll('select').forEach(s => { s.value = ''; s.disabled = false; });
   document.querySelectorAll('input[type="number"]').forEach(n => { n.value = ''; n.disabled = false; });
   document.querySelectorAll('.feedback').forEach(f => { f.className = 'feedback'; f.textContent = ''; });
-  document.querySelectorAll('.sort-item').forEach(item => {
-    item.querySelector('.sn').className = 'sn none';
+  document.querySelectorAll('.sort-list select').forEach(s => {
+    s.value = ''; s.disabled = false;
+    s.style.borderColor = ''; s.style.background = '';
   });
   document.getElementById('resultCard').classList.add('hidden');
   document.getElementById('submitBtn').disabled = false;
