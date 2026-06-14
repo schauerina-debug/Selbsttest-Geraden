@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Selbsttest: Lagebeziehungen von Geraden im Raum</title>
+<title>Selbsttest: Grundlagen der Stochastik</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
   :root {
-    --primary: #2563eb;
-    --primary-light: #eff6ff;
+    --primary: #4f46e5;
+    --primary-light: #eef2ff;
     --green: #16a34a;
     --red: #dc2626;
     --orange: #d97706;
@@ -34,11 +35,16 @@
     margin-bottom: 1.5rem;
   }
   .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
-  input[type="text"] {
+  input[type="text"], input[type="number"] {
     width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border);
-    border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;
+    border-radius: 8px; font-size: 1rem; outline: none;
   }
-  input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+  select {
+    padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; background: white; cursor: pointer; outline: none;
+  }
+  select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
   .question {
     margin-bottom: 1.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;
   }
@@ -49,9 +55,6 @@
     width: 24px; height: 24px; text-align: center; border-radius: 50%;
     font-size: 0.8rem; line-height: 24px; margin-right: 0.5rem;
   }
-
-
-
   .option {
     display: flex; align-items: flex-start; gap: 0.6rem;
     padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer;
@@ -68,12 +71,6 @@
   .option.missed { background: #fef9c3; }
   .option.missed input { accent-color: var(--orange); }
   .option.disabled { opacity: 0.85; }
-
-  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; }
-  .tag.mc { background: #dbeafe; color: #1d4ed8; }
-  .tag.tf { background: #fef3c7; color: #d97706; }
-  .tag.ms { background: #ede9fe; color: #7c3aed; }
-  .tag.dd { background: #fce7f3; color: #db2777; }
 
   .sort-list { list-style: none; padding: 0; }
   .sort-item {
@@ -95,12 +92,6 @@
   .sort-item .sn.ok { background: #dcfce7; color: var(--green); }
   .sort-item .sn.wrong { background: #fee2e2; color: var(--red); }
   .sort-item .sn.none { background: #e2e8f0; color: var(--gray); }
-
-  select {
-    padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 0.95rem; background: white; cursor: pointer; outline: none;
-  }
-  select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
 
   .feedback { margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem; display: none; }
   .feedback.show { display: block; }
@@ -129,7 +120,6 @@
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   th { text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); font-weight: 600; }
   td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
-  th:last-child, td:last-child { text-align: center; }
 
   .hidden { display: none; }
   .nav-top { position: fixed; top: 0.75rem; right: 0.75rem; z-index: 999; }
@@ -137,7 +127,6 @@
   .nav-top a:hover { background: var(--primary-light); color: var(--primary); }
   @media (max-width: 600px) { body { padding: 1rem 0.5rem; } .card { padding: 1rem; } }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -146,8 +135,8 @@
 <body>
 <div class="nav-top"><a href="index.html">&larr; Startseite</a></div>
 <div class="container">
-  <h1>Selbsttest: Lagebeziehungen von Geraden</h1>
-  <p class="subtitle">im dreidimensionalen Raum &mdash; Vektorrechnung</p>
+  <h1>Selbsttest: Grundlagen der Stochastik</h1>
+  <p class="subtitle">Wahrscheinlichkeit, Zufallsexperimente &amp; Ereignisse</p>
 
   <div class="card" id="nameCard">
     <div class="card-title">Teilnehmer</div>
@@ -194,9 +183,95 @@
 </div>
 
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBPXB0EAvnqhH7rK1xbYILP-Hjytx6fj_I",
+  authDomain: "grundlagen-stochastik.firebaseapp.com",
+  projectId: "grundlagen-stochastik",
+  storageBucket: "grundlagen-stochastik.firebasestorage.app",
+  messagingSenderId: "91430096733",
+  appId: "1:91430096733:web:ffe38c1a9e720128dc22b4",
+  measurementId: "G-LK92DSHVPB"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const m = s => '\\(' + s + '\\)';
 
-const vec3latex = (a, b, c) => m('\\begin{pmatrix}' + a + '\\\\' + b + '\\\\' + c + '\\end{pmatrix}');
+const questions = [
+  {
+    type: 'ordering',
+    text: 'Bringe die Schritte zur Bestimmung der Wahrscheinlichkeit eines Ereignisses in die richtige Reihenfolge:',
+    items: [
+      'Alle möglichen Ergebnisse des Zufallsexperiments notieren',
+      'Anzahl der günstigen Ergebnisse zählen',
+      'Anzahl aller möglichen Ergebnisse zählen',
+      'Wahrscheinlichkeit als Bruch berechnen'
+    ],
+    correct: [0, 1, 2, 3]
+  },
+  {
+    type: 'dropdown',
+    text: 'Die Wahrscheinlichkeit eines Ereignisses kann Werte zwischen ' + m('\\ldots') + ' und ' + m('\\ldots') + ' annehmen.',
+    options: [m('-\\infty') + ' und ' + m('+\\infty'), '0 und 1', '1 und 100', '-1 und 1'],
+    correct: 1
+  },
+  {
+    type: 'depcheck',
+    text: 'Überprüfe selbst: Sind die Ereignisse A = "Augenzahl gerade" und B = "Augenzahl ungerade" beim einmaligen Würfeln Gegenereignisse (komplementär)?',
+    vecA: [1,1],
+    vecB: [1,1],
+    dependent: true,
+    factor: 1
+  },
+  {
+    type: 'multiselect',
+    text: 'Welche der folgenden Werte können Wahrscheinlichkeiten sein? <span style="font-weight:400;font-size:0.85rem;color:var(--gray);">(mehrere Antworten möglich)</span>',
+    options: ['0,5', m('\\frac{3}{4}'), '-0,2', '1', '150%'],
+    correct: [0, 1, 3]
+  },
+  {
+    type: 'radio',
+    text: 'Ein Würfel wird einmal geworfen. Wie groß ist die Wahrscheinlichkeit, eine 5 zu würfeln?',
+    options: [m('\\frac{1}{5}'), m('\\frac{1}{6}'), m('\\frac{1}{2}'), m('\\frac{5}{6}')],
+    correct: 1
+  },
+  {
+    type: 'truefalse',
+    text: 'Das Gesetz der großen Zahlen besagt: Je häufiger ein Zufallsexperiment durchgeführt wird, desto mehr nähert sich die relative Häufigkeit der theoretischen Wahrscheinlichkeit an.',
+    correct: true
+  },
+  {
+    type: 'dropdown',
+    text: 'Bei einem idealen Würfel ist die Wahrscheinlichkeit für eine Zahl größer als 4 gleich ' + m('\\ldots'),
+    options: [m('\\frac{1}{6}'), m('\\frac{1}{3}'), m('\\frac{1}{2}'), m('\\frac{2}{3}')],
+    correct: 1
+  },
+  {
+    type: 'radio',
+    text: 'In einer Urne sind 3 rote, 2 blaue und 5 grüne Kugeln. Wie groß ist die Wahrscheinlichkeit, eine blaue Kugel zu ziehen?',
+    options: [m('\\frac{1}{10}'), m('\\frac{1}{5}'), m('\\frac{2}{5}'), m('\\frac{1}{2}')],
+    correct: 1
+  },
+  {
+    type: 'truefalse',
+    text: 'Wenn ein Ereignis sicher eintritt, hat es die Wahrscheinlichkeit 1.',
+    correct: true
+  },
+  {
+    type: 'multiselect',
+    text: 'Welche Aussagen zur Wahrscheinlichkeitsrechnung sind korrekt? <span style="font-weight:400;font-size:0.85rem;color:var(--gray);">(mehrere Antworten möglich)</span>',
+    options: [
+      'Die Summe aller Wahrscheinlichkeiten eines Zufallsexperiments ergibt 1.',
+      'Ein unmögliches Ereignis hat die Wahrscheinlichkeit 0.',
+      'Die relative Häufigkeit ist immer größer als 1.',
+      'Je größer die Anzahl der Versuche, desto genauer wird die relative Häufigkeit.'
+    ],
+    correct: [0, 1, 3]
+  }
+];
+
+const COLLECTION = 'ergebnisse_stochastik';
+const STORAGE_KEY = 'stochastik_log';
 
 function renderMath() {
   if (typeof renderMathInElement === 'function') {
@@ -210,91 +285,6 @@ function renderMath() {
     });
   }
 }
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAD6C3XarkBvX_kFzmPMxHAsj7DSlmxXss",
-  authDomain: "selbsttest-geraden.firebaseapp.com",
-  projectId: "selbsttest-geraden",
-  storageBucket: "selbsttest-geraden.firebasestorage.app",
-  messagingSenderId: "347690680430",
-  appId: "1:347690680430:web:b772b6ae66d830f1a5667f",
-  measurementId: "G-E6XRH37MNC"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const questions = [
-  {
-    type: 'depcheck',
-    text: 'Gegeben sind zwei Geraden mit den Richtungsvektoren ' + vec3latex(2,4,6) + ' und ' + vec3latex(1,2,3) + '. Sind die Vektoren linear abhängig?',
-    vecA: [2,4,6],
-    vecB: [1,2,3],
-    dependent: true,
-    factor: 2,
-    factorOptions: [-2, -1, -0.5, 0, 0.5, 1, 2]
-  },
-  {
-    type: 'radio',
-    text: 'Die Richtungsvektoren sind linear abhängig. Führe nun die Punktprobe durch:<br>g: ' + vec3latex(1,2,3) + ' + r ' + m('\\cdot') + ' ' + vec3latex(2,4,6) + '<br>h: ' + vec3latex(3,6,9) + ' + s ' + m('\\cdot') + ' ' + vec3latex(1,2,3) + '<br><br>Setze den Stützvektor von g in h ein. Welchen Wert erhältst du für s?',
-    options: ['s = 1', 's = 2', 's = –2', 's = 0'],
-    correct: 2
-  },
-  {
-    type: 'dropdown',
-    text: 'Die Richtungsvektoren sind linear abhängig UND der Stützvektor von g liegt auf h (s ergibt für alle drei Koordinaten denselben Wert). Die Geraden sind …',
-    options: ['identisch', 'parallel (echt parallel)', 'windschief', 'schneidend'],
-    correct: 0
-  },
-  {
-    type: 'dropdown',
-    text: 'Zwei Geraden im Raum, deren Richtungsvektoren nicht parallel sind und die sich nicht schneiden, heißen …',
-    options: ['identisch', 'parallel', 'windschief', 'schneidend'],
-    correct: 2
-  },
-  {
-    type: 'multiselect',
-    text: 'Welche der folgenden Aussagen sind richtig? <span style="font-weight:400;font-size:0.85rem;color:var(--gray);">(mehrere Antworten möglich)</span>',
-    options: [
-      'Sind die Richtungsvektoren linear abhängig, dann sind die Geraden parallel oder identisch.',
-      'Windschiefe Geraden besitzen genau einen Schnittpunkt.',
-      'Bei linear unabhängigen Richtungsvektoren setzt man die Gleichungen gleich.',
-      'Identische Geraden haben genau einen gemeinsamen Punkt.'
-    ],
-    correct: [0, 2]
-  },
-  {
-    type: 'truefalse',
-    text: 'Bewerte die Aussage:<br><b>„Zwei Geraden mit linear abhängigen Richtungsvektoren sind immer identisch.“</b>',
-    correct: false
-  },
-  {
-    type: 'radio',
-    text: 'Was gilt für die Richtungsvektoren zweier paralleler (nicht identischer) Geraden?',
-    options: [
-      'Sie sind linear abhängig (Vielfache voneinander).',
-      'Sie sind linear unabhängig.',
-      'Sie sind orthogonal zueinander.',
-      'Sie haben unterschiedliche Längen.'
-    ],
-    correct: 0
-  },
-  {
-    type: 'ordering',
-    text: 'Bringe die Schritte zur Bestimmung der Lage zweier Geraden im Raum in die richtige Reihenfolge:',
-    items: [
-      'Bei Abhängigkeit: Punktprobe durchführen',
-      'Keine Lösung → windschief',
-      'Prüfe, ob die Richtungsvektoren linear abhängig sind',
-      'Punktprobe erfolgreich → identisch',
-      'Eindeutige Lösung → Schnittpunkt',
-      'Bei Unabhängigkeit: Geradengleichungen gleichsetzen',
-      'Punktprobe fehlgeschlagen → parallel'
-    ],
-    correct: [2, 0, 3, 6, 5, 4, 1]
-  }
-];
-
-const STORAGE_KEY = 'selbsttest_geraden_log';
 
 function getLog() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
 function saveLog(log) { localStorage.setItem(STORAGE_KEY, JSON.stringify(log)); }
@@ -327,7 +317,7 @@ function renderQuestions() {
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
         <select id="sel${i}">
           <option value="">— Bitte wählen —</option>
-          ${q.options.map((opt, j) => `<option value="${j}">${opt}</option>`).join('')}
+          ${q.options.map((opt, j) => `<option value="${j}">${esc(opt)}</option>`).join('')}
         </select>
         <div class="feedback" id="fb${i}"></div>`;
       container.appendChild(div);
@@ -345,15 +335,14 @@ function renderQuestions() {
         <div class="feedback" id="fb${i}"></div>`;
       container.appendChild(div);
     } else if (q.type === 'depcheck') {
+      const fa = m('P(A) = \\frac{' + q.vecA[0] + '}{' + q.vecA[1] + '}');
+      const fb = m('P(B) = \\frac{' + q.vecB[0] + '}{' + q.vecB[1] + '}');
       div.innerHTML = `<div class="q-text"><span class="num">${i+1}</span>${q.text}</div>
-        <label class="option" data-idx="0"><input type="radio" name="q${i}" value="yes" onchange="document.getElementById('factorRow${i}').classList.remove('hidden')"> <span>Ja, linear abhängig</span></label>
-        <label class="option" data-idx="1"><input type="radio" name="q${i}" value="no" onchange="document.getElementById('factorRow${i}').classList.add('hidden'); document.getElementById('factor${i}').value=''"> <span>Nein, linear unabhängig</span></label>
-        <div class="factor-row hidden" id="factorRow${i}" style="margin-top:0.75rem;padding-left:2rem;">
-          <span style="font-size:0.95rem;">${vec3latex(q.vecA[0],q.vecA[1],q.vecA[2])} = r ${m('\\cdot')} ${vec3latex(q.vecB[0],q.vecB[1],q.vecB[2])} ${m('\\Rightarrow')} r =
-            <select id="factor${i}" style="padding:0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.95rem;">
-              <option value="">— wählen —</option>
-              ${q.factorOptions.map(v => `<option value="${v}">${v}</option>`).join('')}
-            </select>
+        <label class="option" data-idx="0"><input type="radio" name="q${i}" value="yes"> <span>Ja, Gegenereignisse</span></label>
+        <label class="option" data-idx="1"><input type="radio" name="q${i}" value="no"> <span>Nein, keine Gegenereignisse</span></label>
+        <div class="factor-row" style="margin-top:0.75rem;padding-left:2rem;">
+          <span style="font-size:0.95rem;">${fa} = c ${m('\\cdot')} ${fb} ${m('\\Rightarrow')} c =
+            <input type="number" step="any" id="factor${i}" style="width:80px;padding:0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.95rem;">
           </span>
         </div>
         <div class="feedback" id="fb${i}"></div>`;
@@ -367,6 +356,7 @@ function renderQuestions() {
       container.appendChild(div);
     }
   });
+  renderMath();
 }
 
 function setupDragSort(list) {
@@ -456,11 +446,11 @@ function evaluate() {
           fb.textContent = 'Richtig!';
           fb.className = 'feedback show correct';
         } else {
-          fb.textContent = `Falsch. Richtige Antwort: "${q.options[q.correct]}"`;
+          fb.textContent = `Falsch. Richtige Antwort: "${esc(q.options[q.correct])}"`;
           fb.className = 'feedback show wrong';
         }
       } else {
-        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${esc(q.options[q.correct])}"`;
         fb.className = 'feedback show wrong';
       }
       sel.disabled = true;
@@ -513,28 +503,26 @@ function evaluate() {
       const correctOpt = qDiv.querySelector(`.option[data-idx="${q.dependent ? '0' : '1'}"]`);
       if (correctOpt) correctOpt.classList.add('correct');
       const selected = qDiv.querySelector('input[type="radio"]:checked');
-      const factorEl = document.getElementById(`factor${i}`);
-      const factorVal = factorEl.value !== '' ? parseFloat(factorEl.value) : NaN;
+      const factorVal = parseFloat(document.getElementById(`factor${i}`).value);
       if (selected) {
         answered++;
         const isYes = selected.value === 'yes';
         let factorOk = true;
         if (isYes && q.dependent) {
-          if (isNaN(factorVal) || Math.abs(factorVal - q.factor) > 0.01) factorOk = false;
+          if (Math.abs(factorVal - q.factor) > 0.01) factorOk = false;
         } else if (isYes && !q.dependent) {
           factorOk = false;
         }
         if (isYes === q.dependent && factorOk) {
           correct++;
-          fb.textContent = 'Richtig!';
+          fb.innerHTML = 'Richtig!';
           fb.className = 'feedback show correct';
         } else {
-          let msg = 'Falsch. ' + (q.dependent ? `${vec3latex(q.vecA[0],q.vecA[1],q.vecA[2])} = ${q.factor} ${m('\\cdot')} ${vec3latex(q.vecB[0],q.vecB[1],q.vecB[2])}` : 'Die Vektoren sind linear unabhängig.');
-          fb.innerHTML = msg;
+          fb.innerHTML = 'Falsch. Gegenereignisse: P(A) + P(B) = 1, also ist c = 1.';
           fb.className = 'feedback show wrong';
         }
       } else {
-        fb.innerHTML = 'Nicht beantwortet. ' + (q.dependent ? `${vec3latex(q.vecA[0],q.vecA[1],q.vecA[2])} = ${q.factor} ${m('\\cdot')} ${vec3latex(q.vecB[0],q.vecB[1],q.vecB[2])}` : 'Die Vektoren sind linear unabhängig.');
+        fb.innerHTML = 'Nicht beantwortet. Gegenereignisse: P(A) + P(B) = 1, also ist c = 1.';
         fb.className = 'feedback show wrong';
       }
       renderMathInElement(fb, {delimiters: [{left:'\\(', right:'\\)', display:false}]});
@@ -555,11 +543,11 @@ function evaluate() {
           fb.textContent = 'Richtig!';
           fb.className = 'feedback show correct';
         } else {
-          fb.textContent = `Falsch. Richtige Antwort: "${q.options[q.correct]}"`;
+          fb.textContent = `Falsch. Richtige Antwort: "${esc(q.options[q.correct])}"`;
           fb.className = 'feedback show wrong';
         }
       } else {
-        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.textContent = `Nicht beantwortet. Richtige Antwort: "${esc(q.options[q.correct])}"`;
         fb.className = 'feedback show wrong';
       }
     }
@@ -570,7 +558,7 @@ function evaluate() {
   document.getElementById('scoreDisplay').className = 'score ' + (pct >= 80 ? 'good' : pct >= 50 ? 'ok' : 'bad');
 
   const label = document.getElementById('resultLabel');
-  if (pct === 100) label.textContent = 'Perfekt – alle Lagebeziehungen sicher!';
+  if (pct === 100) label.textContent = 'Perfekt – Stochastik sicher verstanden!';
   else if (pct >= 80) label.textContent = 'Gut gemacht!';
   else if (pct >= 50) label.textContent = 'Ganz ok, übe weiter.';
   else label.textContent = 'Weiter üben – lies die Theorie nochmal nach.';
@@ -585,7 +573,7 @@ function evaluate() {
 
   const oneYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-  db.collection('ergebnisse').add({
+  db.collection(COLLECTION).add({
     name, course, score: `${correct}/${total}`, percent: pct,
     date: new Date().toLocaleString('de-DE'),
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -599,15 +587,16 @@ function showCorrectAnswers() {
     const fb = document.getElementById(`fb${i}`);
     if (q.type === 'ordering') {
       if (!fb.textContent.includes('Richtig')) {
-        fb.textContent = 'Richtige Reihenfolge: ' + q.correct.map((idx, pos) => (pos + 1) + '. ' + q.items[idx]).join(', ');
+        fb.textContent = 'Richtige Reihenfolge: 1. ' + q.items[q.correct[0]] + ', 2. ' + q.items[q.correct[1]] + ', 3. ' + q.items[q.correct[2]] + (q.items[3] ? ', 4. ' + q.items[q.correct[3]] : '');
         fb.className = 'feedback show correct';
       }
       qDiv.querySelectorAll('.sort-item').forEach(item => { item.draggable = false; item.style.cursor = 'default'; });
     } else if (q.type === 'dropdown') {
       document.getElementById(`sel${i}`).disabled = true;
       if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
-        fb.textContent = `Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.innerHTML = `Richtige Antwort: "${esc(q.options[q.correct])}"`;
         fb.className = 'feedback show correct';
+        renderMathInElement(fb, {delimiters: [{left:'\\(', right:'\\)', display:false}]});
       }
     } else if (q.type === 'truefalse') {
       qDiv.querySelectorAll('.option').forEach(o => { o.classList.add('disabled'); o.querySelector('input').disabled = true; });
@@ -624,8 +613,9 @@ function showCorrectAnswers() {
         if (opt) opt.classList.add('correct');
       });
       if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Nicht')) {
-        fb.textContent = 'Richtige Antworten: ' + q.correct.map(idx => '"' + q.options[idx] + '"').join(', ');
+        fb.innerHTML = 'Richtige Antworten: ' + q.correct.map(idx => '"' + esc(q.options[idx]) + '"').join(', ');
         fb.className = 'feedback show correct';
+        renderMathInElement(fb, {delimiters: [{left:'\\(', right:'\\)', display:false}]});
       }
     } else if (q.type === 'depcheck') {
       qDiv.querySelectorAll('.option').forEach(o => { o.classList.add('disabled'); o.querySelector('input').disabled = true; });
@@ -634,7 +624,7 @@ function showCorrectAnswers() {
       const correctOpt = qDiv.querySelector(`.option[data-idx="${q.dependent ? '0' : '1'}"]`);
       if (correctOpt) correctOpt.classList.add('correct');
       if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
-        fb.innerHTML = 'Richtige Antwort: ' + (q.dependent ? `${vec3latex(q.vecA[0],q.vecA[1],q.vecA[2])} = ${q.factor} ${m('\\cdot')} ${vec3latex(q.vecB[0],q.vecB[1],q.vecB[2])}` : 'Die Vektoren sind linear unabhängig.');
+        fb.innerHTML = 'Richtige Antwort: Die Ereignisse sind Gegenereignisse, denn P(A) + P(B) = 1 (c = 1).';
         fb.className = 'feedback show correct';
         renderMathInElement(fb, {delimiters: [{left:'\\(', right:'\\)', display:false}]});
       }
@@ -643,8 +633,9 @@ function showCorrectAnswers() {
       const correctOpt = qDiv.querySelector(`.option[data-idx="${q.correct}"]`);
       if (correctOpt) correctOpt.classList.add('correct');
       if (!fb.textContent.includes('Richtig') && !fb.textContent.includes('Falsch') && !fb.textContent.includes('Nicht')) {
-        fb.textContent = `Richtige Antwort: "${q.options[q.correct]}"`;
+        fb.innerHTML = `Richtige Antwort: "${esc(q.options[q.correct])}"`;
         fb.className = 'feedback show correct';
+        renderMathInElement(fb, {delimiters: [{left:'\\(', right:'\\)', display:false}]});
       }
     }
   });
@@ -685,7 +676,6 @@ function esc(s) { const d = document.createElement('div'); d.textContent = s; re
 
 document.addEventListener('DOMContentLoaded', () => {
   renderQuestions();
-  renderMath();
   renderLog();
   document.getElementById('submitBtn').addEventListener('click', evaluate);
   document.getElementById('resetBtn').addEventListener('click', resetTest);
